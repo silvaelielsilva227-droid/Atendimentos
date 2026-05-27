@@ -19,7 +19,6 @@
             --primary-hover: #0369a1;
             --success: #10b981;
             --warning: #f59e0b;
-            --warning-hover: #d97706;
             --danger: #ef4444;
             --text-main: #0f172a;
             --text-muted: #64748b;
@@ -52,14 +51,12 @@
             width: 100%;
         }
 
-        /* --- ANIMAÇÕES --- */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .fade-in { animation: fadeIn 0.4s ease-out; }
 
-        /* --- TELA DE LOGIN --- */
         #loginView {
             display: flex;
             align-items: center;
@@ -96,7 +93,6 @@
             margin-bottom: 2rem;
         }
 
-        /* --- TOAST DE SUCESSO (Flutuante) --- */
         .toast {
             position: fixed;
             top: 20px;
@@ -115,9 +111,9 @@
             transition: transform 0.3s ease-out;
         }
         .toast.show { transform: translateX(0); }
-        .toast.warning { background: var(--warning); } /* Cor para edição */
+        .toast.warning { background: var(--warning); }
+        .toast.error { background: var(--danger); }
 
-        /* --- COMPONENTES GERAIS --- */
         .card {
             background-color: var(--card-bg);
             border-radius: 16px;
@@ -159,7 +155,6 @@
             gap: 8px;
         }
 
-        /* --- FORMULÁRIOS --- */
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -179,7 +174,7 @@
             color: var(--text-muted);
         }
 
-        input, select, textarea {
+        input, textarea {
             width: 100%;
             padding: 0.8rem 1rem;
             border: 1px solid var(--border);
@@ -191,22 +186,108 @@
             color: var(--text-main);
         }
 
-        /* Campos de Seleção (Select) mais elegantes */
-        select {
-            appearance: none; /* Tira a seta feia padrão do Windows/Celular */
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.2em;
-            padding-right: 2.5rem;
-            cursor: pointer;
-        }
-
-        input:focus, select:focus, textarea:focus {
+        input:focus, textarea:focus {
             border-color: var(--primary);
             background-color: #ffffff;
             box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        /* --- COMPONENTES PERSONALIZADOS --- */
+        
+        /* 1. Botões de Turno */
+        .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+        .radio-pill {
+            flex: 1;
+            text-align: center;
+            padding: 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        .radio-group input[type="radio"]:checked + .radio-pill {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+        }
+
+        /* 2. Menu Dropdown Customizado (Origem) */
+        .custom-select-container {
+            position: relative;
+            width: 100%;
+        }
+        .custom-select-trigger {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: var(--input-bg);
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .custom-select-trigger.open {
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+        .custom-select-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .custom-select-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .custom-option {
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .custom-option:last-child {
+            border-bottom: none;
+        }
+        .custom-option:hover {
+            background-color: #f0f9ff;
+            color: var(--primary);
+            font-weight: 600;
+            padding-left: 1.2rem; /* Efeito de deslizar levemente */
         }
 
         /* --- BOTÕES --- */
@@ -238,7 +319,6 @@
         .btn-download { background-color: var(--text-main); }
         .btn-download:hover { background-color: #000; }
         
-        /* Botão de Cancelar Edição (Inicialmente Oculto) */
         #btnCancelarEdicao {
             background-color: white;
             color: var(--text-muted);
@@ -247,7 +327,6 @@
         }
         #btnCancelarEdicao:hover { background-color: #f1f5f9; color: var(--text-main); }
 
-        /* Botão Ação na Tabela (Editar) */
         .btn-icon {
             width: auto;
             padding: 6px;
@@ -350,8 +429,8 @@
         .badge-manha { background: #fef08a; color: #854d0e; }
         .badge-tarde { background: #fed7aa; color: #9a3412; }
         .badge-origem { background: #e2e8f0; color: #334155; }
+        .badge-hora { background: #f1f5f9; color: #475569; font-family: monospace; font-size: 0.85rem;}
 
-        /* --- RESPONSIVIDADE --- */
         @media (max-width: 600px) {
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .top-bar { flex-direction: column; gap: 15px; }
@@ -366,6 +445,7 @@
     <span id="toastMsg">Atendimento registrado!</span>
 </div>
 
+<!-- TELA DE LOGIN -->
 <div id="loginView" class="container fade-in">
     <div class="login-card">
         <div class="login-icon"><i class="ph-fill ph-users-three"></i></div>
@@ -391,6 +471,7 @@
     </div>
 </div>
 
+<!-- TELA DO PAINEL -->
 <div id="dashboardView" class="container" style="display: none;">
     
     <div class="top-bar fade-in">
@@ -401,45 +482,64 @@
         <button id="btnSair" class="btn-logout"><i class="ph-bold ph-sign-out"></i> Sair</button>
     </div>
 
+    <!-- CARD 1: REGISTRO/EDIÇÃO -->
     <div class="card fade-in" style="animation-delay: 0.1s;">
         <h2 class="card-title" id="tituloFormulario"><i class="ph-fill ph-clipboard-text"></i> Novo Atendimento</h2>
         <form id="formAtendimento">
+            
             <div class="form-row">
                 <div class="form-group">
                     <label>Data do Atendimento</label>
                     <input type="date" id="dataInput" required>
                 </div>
                 <div class="form-group">
-                    <label>Turno</label>
-                    <select id="turno" required>
-                        <option value="Manhã">Manhã</option>
-                        <option value="Tarde">Tarde</option>
-                    </select>
+                    <label>Hora do Atendimento</label>
+                    <input type="time" id="horaInput" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
+                    <label>Turno</label>
+                    <div class="radio-group">
+                        <input type="radio" id="turnoManha" name="turno" value="Manhã" checked>
+                        <label for="turnoManha" class="radio-pill"><i class="ph-fill ph-sun"></i> Manhã</label>
+                        
+                        <input type="radio" id="turnoTarde" name="turno" value="Tarde">
+                        <label for="turnoTarde" class="radio-pill"><i class="ph-fill ph-cloud-sun"></i> Tarde</label>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>Nome Completo</label>
                     <input type="text" id="nome" required placeholder="Digite o nome da pessoa">
                 </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label>CPF (Opcional)</label>
                     <input type="text" id="cpf" placeholder="000.000.000-00">
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label>Origem do Atendimento</label>
-                <select id="origem" required>
-                    <option value="">Selecione a Destinação...</option>
-                    <option value="Público">Atendimento ao Público</option>
-                    <option value="CRAS">CRAS</option>
-                    <option value="CREAS">CREAS</option>
-                    <option value="Criança Feliz">Criança Feliz</option>
-                    <option value="Conselho Tutelar">Conselho Tutelar</option>
-                    <option value="Outro">Outro</option>
-                </select>
+                <div class="form-group">
+                    <label>Origem do Atendimento</label>
+                    <!-- Select Customizado (Substitui o padrão do HTML) -->
+                    <div class="custom-select-container" id="customSelectOrigem">
+                        <div class="custom-select-trigger">
+                            <span id="origemTexto">Selecione a Destinação...</span>
+                            <i class="ph-bold ph-caret-down"></i>
+                        </div>
+                        <div class="custom-select-dropdown">
+                            <div class="custom-option" data-value="Atendimento ao Público">Atendimento ao Público</div>
+                            <div class="custom-option" data-value="CRAS">CRAS</div>
+                            <div class="custom-option" data-value="CREAS">CREAS</div>
+                            <div class="custom-option" data-value="Criança Feliz">Criança Feliz</div>
+                            <div class="custom-option" data-value="Conselho Tutelar">Conselho Tutelar</div>
+                            <div class="custom-option" data-value="Outro">Outro</div>
+                        </div>
+                        <!-- Input oculto que vai guardar o valor pro banco de dados -->
+                        <input type="hidden" id="origemInput">
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -454,13 +554,15 @@
         </form>
     </div>
 
+    <!-- CARD 2: RESUMO -->
     <div class="card fade-in" style="animation-delay: 0.2s;">
         <h2 class="card-title"><i class="ph-fill ph-chart-bar"></i> Resumo Mensal</h2>
         
         <div class="form-row" style="align-items: end;">
             <div class="form-group" style="margin: 0;">
                 <label>Visualizar e Exportar Mês</label>
-                <input type="month" id="mesVisualizacao">
+                <!-- O input de data (month) não customizamos porque ele é nativo de calendário e funciona bem no celular -->
+                <input type="month" id="mesVisualizacao" style="background: var(--input-bg); border-color: var(--border);">
             </div>
             <div>
                 <button type="button" onclick="window.baixarPDFMensal()" style="background-color: var(--card-bg); color: var(--primary); border: 2px solid var(--primary);">
@@ -490,7 +592,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data</th>
+                        <th>Data/Hora</th>
                         <th>Pessoa Atendida</th>
                         <th>Origem</th>
                         <th>Motivo</th>
@@ -503,6 +605,7 @@
         </div>
     </div>
 
+    <!-- CARD 3: BACKUP -->
     <div class="card fade-in" style="animation-delay: 0.3s; background: var(--text-main); color: white;">
         <h2 class="card-title" style="color: white; border-color: #334155;"><i class="ph-fill ph-download-simple"></i> Backup Geral</h2>
         <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">Exporta toda a base de dados do sistema em formato CSV, compatível com Excel.</p>
@@ -511,10 +614,10 @@
 
 </div>
 
+<!-- FIREBASE E SCRIPTS -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    // IMPORTANTE: Adicionamos a função 'update' na linha abaixo para permitir edição
     import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -534,13 +637,52 @@
 
     let atendimentosGlobais = [];
     let usuarioAtual = null;
-    let idEditando = null; // Variável para controlar se estamos editando alguém
+    let idEditando = null; 
 
+    // --- LÓGICA DO SELECT CUSTOMIZADO ---
+    const selectContainer = document.getElementById('customSelectOrigem');
+    const selectTrigger = selectContainer.querySelector('.custom-select-trigger');
+    const selectDropdown = selectContainer.querySelector('.custom-select-dropdown');
+    const origemInputHidden = document.getElementById('origemInput');
+    const origemTexto = document.getElementById('origemTexto');
+
+    // Abrir/Fechar dropdown
+    selectTrigger.addEventListener('click', () => {
+        selectDropdown.classList.toggle('open');
+        selectTrigger.classList.toggle('open');
+    });
+
+    // Selecionar uma opção
+    document.querySelectorAll('.custom-option').forEach(option => {
+        option.addEventListener('click', function() {
+            origemTexto.innerText = this.innerText;
+            origemTexto.style.color = 'var(--text-main)'; // Tira a cor cinza de "placeholder"
+            origemInputHidden.value = this.dataset.value;
+            selectDropdown.classList.remove('open');
+            selectTrigger.classList.remove('open');
+        });
+    });
+
+    // Fechar ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (!selectContainer.contains(e.target)) {
+            selectDropdown.classList.remove('open');
+            selectTrigger.classList.remove('open');
+        }
+    });
+
+    // --- FUNÇÕES GERAIS ---
     const loginView = document.getElementById('loginView');
     const dashboardView = document.getElementById('dashboardView');
     const loginError = document.getElementById('loginError');
 
-    // Estado da Autenticação
+    function preencherDataHora() {
+        const agora = new Date();
+        document.getElementById('dataInput').value = agora.toISOString().split('T')[0];
+        const horaFormatada = agora.toTimeString().split(' ')[0].substring(0, 5);
+        document.getElementById('horaInput').value = horaFormatada;
+    }
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             usuarioAtual = user;
@@ -555,7 +697,6 @@
         }
     });
 
-    // Login
     document.getElementById('formLogin').addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('emailLogin').value;
@@ -568,16 +709,11 @@
         });
     });
 
-    // Sair
     document.getElementById('btnSair').addEventListener('click', () => signOut(auth));
 
-    // Configurações de Data Inicial
-    const hoje = new Date();
-    const dataFormatada = hoje.toISOString().split('T')[0];
-    document.getElementById('dataInput').value = dataFormatada;
-    document.getElementById('mesVisualizacao').value = dataFormatada.substring(0, 7);
+    preencherDataHora();
+    document.getElementById('mesVisualizacao').value = new Date().toISOString().split('T')[0].substring(0, 7);
 
-    // Carregar Banco de Dados
     function iniciarBancoDeDados() {
         onValue(ref(db, 'atendimentos'), (snapshot) => {
             const dados = snapshot.val();
@@ -589,7 +725,6 @@
         });
     }
 
-    // Mostrar Toast de Notificação
     function mostrarToast(mensagem, tipo = 'sucesso') {
         const toast = document.getElementById('toastSucesso');
         const icon = document.getElementById('toastIcon');
@@ -597,33 +732,44 @@
         document.getElementById('toastMsg').innerText = mensagem;
         
         if (tipo === 'aviso') {
-            toast.classList.add('warning');
+            toast.className = 'toast warning show';
             icon.className = 'ph-fill ph-pencil-simple';
+        } else if (tipo === 'erro') {
+            toast.className = 'toast error show';
+            icon.className = 'ph-fill ph-warning-circle';
         } else {
-            toast.classList.remove('warning');
+            toast.className = 'toast show';
             icon.className = 'ph-fill ph-check-circle';
         }
 
-        toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // Preparar para Editar (Exportado para o window para ser chamado pelo HTML)
     window.editarAtendimento = function(id) {
         const item = atendimentosGlobais.find(a => a.id === id);
         if(!item) return;
 
-        // Converter DD/MM/YYYY de volta para YYYY-MM-DD pro campo <input type="date">
         const partesData = item.data.split('/');
         document.getElementById('dataInput').value = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
+        document.getElementById('horaInput').value = item.hora || '00:00';
         
-        document.getElementById('turno').value = item.turno || 'Manhã';
+        // Define o Turno nos Radio Buttons
+        if(item.turno === 'Tarde') {
+            document.getElementById('turnoTarde').checked = true;
+        } else {
+            document.getElementById('turnoManha').checked = true;
+        }
+
         document.getElementById('nome').value = item.nome;
         document.getElementById('cpf').value = item.cpf || '';
-        document.getElementById('origem').value = item.origem;
+        
+        // Define a Origem no Custom Select
+        origemTexto.innerText = item.origem;
+        origemTexto.style.color = 'var(--text-main)';
+        origemInputHidden.value = item.origem;
+
         document.getElementById('motivo').value = item.motivo;
 
-        // Muda a interface para "Modo de Edição"
         idEditando = id;
         document.getElementById('tituloFormulario').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Editar Atendimento';
         
@@ -632,18 +778,20 @@
         btnSubmit.style.backgroundColor = 'var(--warning)';
         
         document.getElementById('btnCancelarEdicao').style.display = 'flex';
-
-        // Rola a tela suavemente para cima até o formulário
         document.getElementById('formAtendimento').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Cancelar Edição e voltar ao normal
     window.cancelarEdicao = function() {
         idEditando = null;
         document.getElementById('formAtendimento').reset();
         
-        // Restaura a data para hoje
-        document.getElementById('dataInput').value = new Date().toISOString().split('T')[0];
+        // Reseta os custom components
+        document.getElementById('turnoManha').checked = true;
+        origemTexto.innerText = 'Selecione a Destinação...';
+        origemTexto.style.color = 'var(--text-muted)';
+        origemInputHidden.value = '';
+
+        preencherDataHora();
         
         document.getElementById('tituloFormulario').innerHTML = '<i class="ph-fill ph-clipboard-text"></i> Novo Atendimento';
         
@@ -654,43 +802,46 @@
         document.getElementById('btnCancelarEdicao').style.display = 'none';
     }
 
-    // Cadastrar ou Salvar Edição de Atendimento
     document.getElementById('formAtendimento').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Validação Manual do Select Customizado
+        if (!origemInputHidden.value) {
+            mostrarToast('Selecione a Origem do Atendimento!', 'erro');
+            return;
+        }
 
         const dataISO = document.getElementById('dataInput').value;
         const partesData = dataISO.split('-');
         const dataBR = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
+        // Pega o valor do radio button selecionado
+        const turnoSelecionado = document.querySelector('input[name="turno"]:checked').value;
+
         const dadosAtendimento = {
             data: dataBR,
-            turno: document.getElementById('turno').value,
+            hora: document.getElementById('horaInput').value,
+            turno: turnoSelecionado,
             nome: document.getElementById('nome').value,
             cpf: document.getElementById('cpf').value,
-            origem: document.getElementById('origem').value,
+            origem: origemInputHidden.value,
             motivo: document.getElementById('motivo').value,
             registradoPor: usuarioAtual.email
         };
 
         if (idEditando) {
-            // ATUALIZA um registro existente
             update(ref(db, 'atendimentos/' + idEditando), dadosAtendimento).then(() => {
                 window.cancelarEdicao();
                 mostrarToast('Alteração salva com sucesso!', 'aviso');
             });
         } else {
-            // CRIA um registro novo
             push(ref(db, 'atendimentos'), dadosAtendimento).then(() => {
-                document.getElementById('nome').value = '';
-                document.getElementById('cpf').value = '';
-                document.getElementById('motivo').value = '';
-                document.getElementById('origem').value = '';
+                window.cancelarEdicao(); // Limpa e prepara pra proximo
                 mostrarToast('Atendimento registrado!');
             });
         }
     });
 
-    // Atualizar Tabela Visual
     document.getElementById('mesVisualizacao').addEventListener('change', atualizarTela);
 
     function atualizarTela() {
@@ -718,12 +869,16 @@
             
             listaInvertida.forEach(item => {
                 const classeTurno = item.turno === 'Manhã' ? 'badge-manha' : 'badge-tarde';
+                const horaFormatada = item.hora ? item.hora : '--:--';
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="white-space: nowrap; font-size: 0.85rem;">
                         <div style="font-weight: 600;">${item.data}</div>
-                        <div class="badge ${classeTurno}" style="display: inline-block; margin-top: 4px;">${item.turno || '-'}</div>
+                        <div style="margin-top: 4px; display: flex; gap: 5px; align-items: center;">
+                            <span class="badge ${classeTurno}">${item.turno || '-'}</span>
+                            <span class="badge badge-hora"><i class="ph ph-clock"></i> ${horaFormatada}</span>
+                        </div>
                     </td>
                     <td>
                         <strong>${item.nome}</strong><br>
@@ -742,7 +897,6 @@
         }
     }
 
-    // Exportações (Mantidas conforme suas edições manuais)
     window.baixarPDFMensal = function() {
         const mesSelecionado = document.getElementById('mesVisualizacao').value;
         if (!mesSelecionado) return alert("Selecione um mês.");
@@ -765,12 +919,12 @@
         doc.text(`Referência: ${mesFiltro}/${anoFiltro} | Total De Atendimentos: ${dadosMensais.length}`, 14, 22);
 
         const linhasTabela = dadosMensais.map(item => [
-            item.data, item.turno || '-', item.nome, item.origem, item.motivo
+            item.data, item.hora || '--:--', item.turno || '-', item.nome, item.origem, item.motivo
         ]);
 
         doc.autoTable({
             startY: 28,
-            head: [['Data', 'Turno', 'Nome', 'Origem', 'Motivo']],
+            head: [['Data', 'Hora', 'Turno', 'Nome', 'Origem', 'Motivo']],
             body: linhasTabela,
             theme: 'striped',
             headStyles: { fillColor: [2, 132, 199] },
@@ -783,11 +937,12 @@
     window.baixarCSV = function() {
         if (atendimentosGlobais.length === 0) return alert('Base de dados vazia.');
 
-        let csvContent = "\uFEFFData;Turno;Nome;CPF;Origem;Motivo;RegistradoPor\n";
+        let csvContent = "\uFEFFData;Hora;Turno;Nome;CPF;Origem;Motivo;RegistradoPor\n";
 
         atendimentosGlobais.forEach(item => {
             const motivoLimpo = item.motivo.replace(/(\r\n|\n|\r)/gm, " ");
-            csvContent += `${item.data};${item.turno || "-"};${item.nome};${item.cpf};${item.origem};${motivoLimpo};${item.registradoPor || "-"}\n`;
+            const hora = item.hora || "--:--";
+            csvContent += `${item.data};${hora};${item.turno || "-"};${item.nome};${item.cpf};${item.origem};${motivoLimpo};${item.registradoPor || "-"}\n`;
         });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
