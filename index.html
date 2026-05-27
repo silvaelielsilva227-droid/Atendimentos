@@ -194,7 +194,6 @@
 
         /* --- COMPONENTES PERSONALIZADOS --- */
         
-        /* 1. Botões de Turno */
         .radio-group {
             display: flex;
             gap: 10px;
@@ -226,7 +225,6 @@
             box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
         }
 
-        /* 2. Menu Dropdown Customizado (Origem) */
         .custom-select-container {
             position: relative;
             width: 100%;
@@ -287,7 +285,7 @@
             background-color: #f0f9ff;
             color: var(--primary);
             font-weight: 600;
-            padding-left: 1.2rem; /* Efeito de deslizar levemente */
+            padding-left: 1.2rem;
         }
 
         /* --- BOTÕES --- */
@@ -337,7 +335,18 @@
         .btn-icon:hover {
             background: #e0f2fe;
             color: var(--primary);
-            transform: none;
+        }
+
+        .btn-icon-danger {
+            width: auto;
+            padding: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 6px;
+        }
+        .btn-icon-danger:hover {
+            background: #fef2f2;
+            color: var(--danger);
         }
 
         /* --- MÉTRICAS --- */
@@ -393,7 +402,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            min-width: 750px;
+            min-width: 800px;
         }
 
         th {
@@ -431,6 +440,12 @@
         .badge-origem { background: #e2e8f0; color: #334155; }
         .badge-hora { background: #f1f5f9; color: #475569; font-family: monospace; font-size: 0.85rem;}
 
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
         @media (max-width: 600px) {
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .top-bar { flex-direction: column; gap: 15px; }
@@ -445,7 +460,6 @@
     <span id="toastMsg">Atendimento registrado!</span>
 </div>
 
-<!-- TELA DE LOGIN -->
 <div id="loginView" class="container fade-in">
     <div class="login-card">
         <div class="login-icon"><i class="ph-fill ph-users-three"></i></div>
@@ -471,7 +485,6 @@
     </div>
 </div>
 
-<!-- TELA DO PAINEL -->
 <div id="dashboardView" class="container" style="display: none;">
     
     <div class="top-bar fade-in">
@@ -482,7 +495,6 @@
         <button id="btnSair" class="btn-logout"><i class="ph-bold ph-sign-out"></i> Sair</button>
     </div>
 
-    <!-- CARD 1: REGISTRO/EDIÇÃO -->
     <div class="card fade-in" style="animation-delay: 0.1s;">
         <h2 class="card-title" id="tituloFormulario"><i class="ph-fill ph-clipboard-text"></i> Novo Atendimento</h2>
         <form id="formAtendimento">
@@ -522,7 +534,6 @@
                 </div>
                 <div class="form-group">
                     <label>Origem do Atendimento</label>
-                    <!-- Select Customizado (Substitui o padrão do HTML) -->
                     <div class="custom-select-container" id="customSelectOrigem">
                         <div class="custom-select-trigger">
                             <span id="origemTexto">Selecione a Destinação...</span>
@@ -536,7 +547,6 @@
                             <div class="custom-option" data-value="Conselho Tutelar">Conselho Tutelar</div>
                             <div class="custom-option" data-value="Outro">Outro</div>
                         </div>
-                        <!-- Input oculto que vai guardar o valor pro banco de dados -->
                         <input type="hidden" id="origemInput">
                     </div>
                 </div>
@@ -554,14 +564,12 @@
         </form>
     </div>
 
-    <!-- CARD 2: RESUMO -->
     <div class="card fade-in" style="animation-delay: 0.2s;">
         <h2 class="card-title"><i class="ph-fill ph-chart-bar"></i> Resumo Mensal</h2>
         
         <div class="form-row" style="align-items: end;">
             <div class="form-group" style="margin: 0;">
                 <label>Visualizar e Exportar Mês</label>
-                <!-- O input de data (month) não customizamos porque ele é nativo de calendário e funciona bem no celular -->
                 <input type="month" id="mesVisualizacao" style="background: var(--input-bg); border-color: var(--border);">
             </div>
             <div>
@@ -605,7 +613,6 @@
         </div>
     </div>
 
-    <!-- CARD 3: BACKUP -->
     <div class="card fade-in" style="animation-delay: 0.3s; background: var(--text-main); color: white;">
         <h2 class="card-title" style="color: white; border-color: #334155;"><i class="ph-fill ph-download-simple"></i> Backup Geral</h2>
         <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">Exporta toda a base de dados do sistema em formato CSV, compatível com Excel.</p>
@@ -614,11 +621,11 @@
 
 </div>
 
-<!-- FIREBASE E SCRIPTS -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    // IMPORTANTE: Adicionado o "remove" na importação abaixo para a função de Excluir
+    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCV-NLHOdBQDI88vQGDZ_rxCjx3wluAEqE",
@@ -646,24 +653,21 @@
     const origemInputHidden = document.getElementById('origemInput');
     const origemTexto = document.getElementById('origemTexto');
 
-    // Abrir/Fechar dropdown
     selectTrigger.addEventListener('click', () => {
         selectDropdown.classList.toggle('open');
         selectTrigger.classList.toggle('open');
     });
 
-    // Selecionar uma opção
     document.querySelectorAll('.custom-option').forEach(option => {
         option.addEventListener('click', function() {
             origemTexto.innerText = this.innerText;
-            origemTexto.style.color = 'var(--text-main)'; // Tira a cor cinza de "placeholder"
+            origemTexto.style.color = 'var(--text-main)'; 
             origemInputHidden.value = this.dataset.value;
             selectDropdown.classList.remove('open');
             selectTrigger.classList.remove('open');
         });
     });
 
-    // Fechar ao clicar fora
     document.addEventListener('click', (e) => {
         if (!selectContainer.contains(e.target)) {
             selectDropdown.classList.remove('open');
@@ -736,7 +740,7 @@
             icon.className = 'ph-fill ph-pencil-simple';
         } else if (tipo === 'erro') {
             toast.className = 'toast error show';
-            icon.className = 'ph-fill ph-warning-circle';
+            icon.className = 'ph-fill ph-trash';
         } else {
             toast.className = 'toast show';
             icon.className = 'ph-fill ph-check-circle';
@@ -745,6 +749,7 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    // --- FUNÇÃO DE EDITAR ---
     window.editarAtendimento = function(id) {
         const item = atendimentosGlobais.find(a => a.id === id);
         if(!item) return;
@@ -753,7 +758,6 @@
         document.getElementById('dataInput').value = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
         document.getElementById('horaInput').value = item.hora || '00:00';
         
-        // Define o Turno nos Radio Buttons
         if(item.turno === 'Tarde') {
             document.getElementById('turnoTarde').checked = true;
         } else {
@@ -763,7 +767,6 @@
         document.getElementById('nome').value = item.nome;
         document.getElementById('cpf').value = item.cpf || '';
         
-        // Define a Origem no Custom Select
         origemTexto.innerText = item.origem;
         origemTexto.style.color = 'var(--text-main)';
         origemInputHidden.value = item.origem;
@@ -785,7 +788,6 @@
         idEditando = null;
         document.getElementById('formAtendimento').reset();
         
-        // Reseta os custom components
         document.getElementById('turnoManha').checked = true;
         origemTexto.innerText = 'Selecione a Destinação...';
         origemTexto.style.color = 'var(--text-muted)';
@@ -802,12 +804,29 @@
         document.getElementById('btnCancelarEdicao').style.display = 'none';
     }
 
+    // --- FUNÇÃO DE EXCLUIR ---
+    window.excluirAtendimento = function(id) {
+        // Exibe uma caixa de confirmação nativa do navegador
+        const confirmacao = confirm("Tem certeza que deseja EXCLUIR este atendimento? Essa ação não pode ser desfeita.");
+        
+        if (confirmacao) {
+            remove(ref(db, 'atendimentos/' + id)).then(() => {
+                mostrarToast('Atendimento excluído!', 'erro');
+                
+                // Se a pessoa apagou o registro enquanto o estava editando, cancela a edição
+                if (idEditando === id) {
+                    window.cancelarEdicao();
+                }
+            });
+        }
+    }
+
+    // --- SALVAR NOVO OU EDIÇÃO ---
     document.getElementById('formAtendimento').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Validação Manual do Select Customizado
         if (!origemInputHidden.value) {
-            mostrarToast('Selecione a Origem do Atendimento!', 'erro');
+            alert('Por favor, selecione a Origem do Atendimento!');
             return;
         }
 
@@ -815,7 +834,6 @@
         const partesData = dataISO.split('-');
         const dataBR = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        // Pega o valor do radio button selecionado
         const turnoSelecionado = document.querySelector('input[name="turno"]:checked').value;
 
         const dadosAtendimento = {
@@ -836,7 +854,7 @@
             });
         } else {
             push(ref(db, 'atendimentos'), dadosAtendimento).then(() => {
-                window.cancelarEdicao(); // Limpa e prepara pra proximo
+                window.cancelarEdicao(); 
                 mostrarToast('Atendimento registrado!');
             });
         }
@@ -886,10 +904,15 @@
                     </td>
                     <td><span class="badge badge-origem">${item.origem}</span></td>
                     <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.motivo}">${item.motivo}</div></td>
-                    <td style="text-align: center;">
-                        <button class="btn-icon" onclick="window.editarAtendimento('${item.id}')" title="Editar Informações">
-                            <i class="ph-bold ph-pencil-simple" style="font-size: 1.2rem;"></i>
-                        </button>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <div class="action-buttons">
+                            <button class="btn-icon" onclick="window.editarAtendimento('${item.id}')" title="Editar Informações">
+                                <i class="ph-bold ph-pencil-simple" style="font-size: 1.2rem;"></i>
+                            </button>
+                            <button class="btn-icon-danger" onclick="window.excluirAtendimento('${item.id}')" title="Excluir Atendimento">
+                                <i class="ph-bold ph-trash" style="font-size: 1.2rem;"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
