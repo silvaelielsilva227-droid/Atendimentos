@@ -5,12 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recepção - Assistência Social</title>
     
-    <!-- Fonte Moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Ícones (Phosphor Icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- Bibliotecas para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -18,9 +15,11 @@
         :root {
             --bg-body: #f0f9ff;
             --card-bg: #ffffff;
-            --primary: #0284c7; /* Sky Blue */
+            --primary: #0284c7; 
             --primary-hover: #0369a1;
             --success: #10b981;
+            --warning: #f59e0b;
+            --warning-hover: #d97706;
             --danger: #ef4444;
             --text-main: #0f172a;
             --text-muted: #64748b;
@@ -58,7 +57,6 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
         .fade-in { animation: fadeIn 0.4s ease-out; }
 
         /* --- TELA DE LOGIN --- */
@@ -116,10 +114,8 @@
             transform: translateX(150%);
             transition: transform 0.3s ease-out;
         }
-
-        .toast.show {
-            transform: translateX(0);
-        }
+        .toast.show { transform: translateX(0); }
+        .toast.warning { background: var(--warning); } /* Cor para edição */
 
         /* --- COMPONENTES GERAIS --- */
         .card {
@@ -195,6 +191,18 @@
             color: var(--text-main);
         }
 
+        /* Campos de Seleção (Select) mais elegantes */
+        select {
+            appearance: none; /* Tira a seta feia padrão do Windows/Celular */
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
             background-color: #ffffff;
@@ -230,6 +238,29 @@
         .btn-download { background-color: var(--text-main); }
         .btn-download:hover { background-color: #000; }
         
+        /* Botão de Cancelar Edição (Inicialmente Oculto) */
+        #btnCancelarEdicao {
+            background-color: white;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            display: none;
+        }
+        #btnCancelarEdicao:hover { background-color: #f1f5f9; color: var(--text-main); }
+
+        /* Botão Ação na Tabela (Editar) */
+        .btn-icon {
+            width: auto;
+            padding: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 6px;
+        }
+        .btn-icon:hover {
+            background: #e0f2fe;
+            color: var(--primary);
+            transform: none;
+        }
+
         /* --- MÉTRICAS --- */
         .stats-grid {
             display: grid;
@@ -283,7 +314,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            min-width: 700px;
+            min-width: 750px;
         }
 
         th {
@@ -302,6 +333,7 @@
             padding: 1rem;
             border-bottom: 1px solid var(--border);
             color: var(--text-main);
+            vertical-align: middle;
         }
 
         tr:last-child td { border-bottom: none; }
@@ -329,13 +361,11 @@
 </head>
 <body>
 
-<!-- TOAST DE SUCESSO -->
 <div id="toastSucesso" class="toast">
-    <i class="ph-fill ph-check-circle" style="font-size: 1.5rem;"></i>
-    Atendimento registrado!
+    <i class="ph-fill ph-check-circle" id="toastIcon" style="font-size: 1.5rem;"></i>
+    <span id="toastMsg">Atendimento registrado!</span>
 </div>
 
-<!-- TELA DE LOGIN -->
 <div id="loginView" class="container fade-in">
     <div class="login-card">
         <div class="login-icon"><i class="ph-fill ph-users-three"></i></div>
@@ -361,7 +391,6 @@
     </div>
 </div>
 
-<!-- TELA DO PAINEL -->
 <div id="dashboardView" class="container" style="display: none;">
     
     <div class="top-bar fade-in">
@@ -372,9 +401,8 @@
         <button id="btnSair" class="btn-logout"><i class="ph-bold ph-sign-out"></i> Sair</button>
     </div>
 
-    <!-- CARD 1: REGISTRO -->
     <div class="card fade-in" style="animation-delay: 0.1s;">
-        <h2 class="card-title"><i class="ph-fill ph-clipboard-text"></i> Novo Atendimento</h2>
+        <h2 class="card-title" id="tituloFormulario"><i class="ph-fill ph-clipboard-text"></i> Novo Atendimento</h2>
         <form id="formAtendimento">
             <div class="form-row">
                 <div class="form-group">
@@ -419,11 +447,13 @@
                 <textarea id="motivo" required placeholder="O que a pessoa veio fazer?"></textarea>
             </div>
 
-            <button type="submit"><i class="ph-bold ph-check"></i> Registrar Atendimento</button>
+            <div class="form-row">
+                <button type="submit" id="btnSubmitForm"><i class="ph-bold ph-check"></i> Registrar Atendimento</button>
+                <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()"><i class="ph-bold ph-x"></i> Cancelar</button>
+            </div>
         </form>
     </div>
 
-    <!-- CARD 2: RESUMO -->
     <div class="card fade-in" style="animation-delay: 0.2s;">
         <h2 class="card-title"><i class="ph-fill ph-chart-bar"></i> Resumo Mensal</h2>
         
@@ -464,6 +494,7 @@
                         <th>Pessoa Atendida</th>
                         <th>Origem</th>
                         <th>Motivo</th>
+                        <th style="text-align: center;">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaMes">
@@ -472,7 +503,6 @@
         </div>
     </div>
 
-    <!-- CARD 3: BACKUP -->
     <div class="card fade-in" style="animation-delay: 0.3s; background: var(--text-main); color: white;">
         <h2 class="card-title" style="color: white; border-color: #334155;"><i class="ph-fill ph-download-simple"></i> Backup Geral</h2>
         <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">Exporta toda a base de dados do sistema em formato CSV, compatível com Excel.</p>
@@ -481,11 +511,11 @@
 
 </div>
 
-<!-- FIREBASE E SCRIPTS -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    // IMPORTANTE: Adicionamos a função 'update' na linha abaixo para permitir edição
+    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCV-NLHOdBQDI88vQGDZ_rxCjx3wluAEqE",
@@ -504,6 +534,7 @@
 
     let atendimentosGlobais = [];
     let usuarioAtual = null;
+    let idEditando = null; // Variável para controlar se estamos editando alguém
 
     const loginView = document.getElementById('loginView');
     const dashboardView = document.getElementById('dashboardView');
@@ -558,14 +589,72 @@
         });
     }
 
-    // Mostrar Toast de Sucesso
-    function mostrarToast() {
+    // Mostrar Toast de Notificação
+    function mostrarToast(mensagem, tipo = 'sucesso') {
         const toast = document.getElementById('toastSucesso');
+        const icon = document.getElementById('toastIcon');
+        
+        document.getElementById('toastMsg').innerText = mensagem;
+        
+        if (tipo === 'aviso') {
+            toast.classList.add('warning');
+            icon.className = 'ph-fill ph-pencil-simple';
+        } else {
+            toast.classList.remove('warning');
+            icon.className = 'ph-fill ph-check-circle';
+        }
+
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // Cadastrar Atendimento
+    // Preparar para Editar (Exportado para o window para ser chamado pelo HTML)
+    window.editarAtendimento = function(id) {
+        const item = atendimentosGlobais.find(a => a.id === id);
+        if(!item) return;
+
+        // Converter DD/MM/YYYY de volta para YYYY-MM-DD pro campo <input type="date">
+        const partesData = item.data.split('/');
+        document.getElementById('dataInput').value = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
+        
+        document.getElementById('turno').value = item.turno || 'Manhã';
+        document.getElementById('nome').value = item.nome;
+        document.getElementById('cpf').value = item.cpf || '';
+        document.getElementById('origem').value = item.origem;
+        document.getElementById('motivo').value = item.motivo;
+
+        // Muda a interface para "Modo de Edição"
+        idEditando = id;
+        document.getElementById('tituloFormulario').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Editar Atendimento';
+        
+        const btnSubmit = document.getElementById('btnSubmitForm');
+        btnSubmit.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Salvar Alterações';
+        btnSubmit.style.backgroundColor = 'var(--warning)';
+        
+        document.getElementById('btnCancelarEdicao').style.display = 'flex';
+
+        // Rola a tela suavemente para cima até o formulário
+        document.getElementById('formAtendimento').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Cancelar Edição e voltar ao normal
+    window.cancelarEdicao = function() {
+        idEditando = null;
+        document.getElementById('formAtendimento').reset();
+        
+        // Restaura a data para hoje
+        document.getElementById('dataInput').value = new Date().toISOString().split('T')[0];
+        
+        document.getElementById('tituloFormulario').innerHTML = '<i class="ph-fill ph-clipboard-text"></i> Novo Atendimento';
+        
+        const btnSubmit = document.getElementById('btnSubmitForm');
+        btnSubmit.innerHTML = '<i class="ph-bold ph-check"></i> Registrar Atendimento';
+        btnSubmit.style.backgroundColor = 'var(--primary)';
+        
+        document.getElementById('btnCancelarEdicao').style.display = 'none';
+    }
+
+    // Cadastrar ou Salvar Edição de Atendimento
     document.getElementById('formAtendimento').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -573,7 +662,7 @@
         const partesData = dataISO.split('-');
         const dataBR = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        const novoAtendimento = {
+        const dadosAtendimento = {
             data: dataBR,
             turno: document.getElementById('turno').value,
             nome: document.getElementById('nome').value,
@@ -583,16 +672,25 @@
             registradoPor: usuarioAtual.email
         };
 
-        push(ref(db, 'atendimentos'), novoAtendimento).then(() => {
-            document.getElementById('nome').value = '';
-            document.getElementById('cpf').value = '';
-            document.getElementById('motivo').value = '';
-            document.getElementById('origem').value = '';
-            mostrarToast();
-        });
+        if (idEditando) {
+            // ATUALIZA um registro existente
+            update(ref(db, 'atendimentos/' + idEditando), dadosAtendimento).then(() => {
+                window.cancelarEdicao();
+                mostrarToast('Alteração salva com sucesso!', 'aviso');
+            });
+        } else {
+            // CRIA um registro novo
+            push(ref(db, 'atendimentos'), dadosAtendimento).then(() => {
+                document.getElementById('nome').value = '';
+                document.getElementById('cpf').value = '';
+                document.getElementById('motivo').value = '';
+                document.getElementById('origem').value = '';
+                mostrarToast('Atendimento registrado!');
+            });
+        }
     });
 
-    // Atualizar Tabela
+    // Atualizar Tabela Visual
     document.getElementById('mesVisualizacao').addEventListener('change', atualizarTela);
 
     function atualizarTela() {
@@ -614,7 +712,7 @@
         tbody.innerHTML = '';
 
         if (listaMes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">Nenhum registro encontrado.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Nenhum registro encontrado.</td></tr>';
         } else {
             const listaInvertida = [...listaMes].reverse();
             
@@ -633,13 +731,18 @@
                     </td>
                     <td><span class="badge badge-origem">${item.origem}</span></td>
                     <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.motivo}">${item.motivo}</div></td>
+                    <td style="text-align: center;">
+                        <button class="btn-icon" onclick="window.editarAtendimento('${item.id}')" title="Editar Informações">
+                            <i class="ph-bold ph-pencil-simple" style="font-size: 1.2rem;"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
     }
 
-    // Exportações
+    // Exportações (Mantidas conforme suas edições manuais)
     window.baixarPDFMensal = function() {
         const mesSelecionado = document.getElementById('mesVisualizacao').value;
         if (!mesSelecionado) return alert("Selecione um mês.");
