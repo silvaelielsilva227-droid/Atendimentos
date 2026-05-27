@@ -624,7 +624,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    // IMPORTANTE: Adicionado o "remove" na importação abaixo para a função de Excluir
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -806,14 +805,12 @@
 
     // --- FUNÇÃO DE EXCLUIR ---
     window.excluirAtendimento = function(id) {
-        // Exibe uma caixa de confirmação nativa do navegador
         const confirmacao = confirm("Tem certeza que deseja EXCLUIR este atendimento? Essa ação não pode ser desfeita.");
         
         if (confirmacao) {
             remove(ref(db, 'atendimentos/' + id)).then(() => {
                 mostrarToast('Atendimento excluído!', 'erro');
                 
-                // Se a pessoa apagou o registro enquanto o estava editando, cancela a edição
                 if (idEditando === id) {
                     window.cancelarEdicao();
                 }
@@ -920,6 +917,7 @@
         }
     }
 
+    // --- CORREÇÃO DO PDF PARA INCLUIR O CPF ---
     window.baixarPDFMensal = function() {
         const mesSelecionado = document.getElementById('mesVisualizacao').value;
         if (!mesSelecionado) return alert("Selecione um mês.");
@@ -941,17 +939,24 @@
         doc.setTextColor(100);
         doc.text(`Referência: ${mesFiltro}/${anoFiltro} | Total De Atendimentos: ${dadosMensais.length}`, 14, 22);
 
+        // Agora o CPF também é listado na hora de criar a tabela do PDF
         const linhasTabela = dadosMensais.map(item => [
-            item.data, item.hora || '--:--', item.turno || '-', item.nome, item.origem, item.motivo
+            item.data, 
+            item.hora || '--:--', 
+            item.turno || '-', 
+            item.nome, 
+            item.cpf || '-', 
+            item.origem, 
+            item.motivo
         ]);
 
         doc.autoTable({
             startY: 28,
-            head: [['Data', 'Hora', 'Turno', 'Nome', 'Origem', 'Motivo']],
+            head: [['Data', 'Hora', 'Turno', 'Nome', 'CPF', 'Origem', 'Motivo']],
             body: linhasTabela,
             theme: 'striped',
             headStyles: { fillColor: [2, 132, 199] },
-            styles: { fontSize: 8 }
+            styles: { fontSize: 7 } // Fonte ajustada para a coluna extra caber na folha
         });
 
         doc.save(`Relatorio_${mesFiltro}_${anoFiltro}.pdf`);
