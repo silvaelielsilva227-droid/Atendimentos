@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recepção - Assistência Social</title>
+    
+    <!-- Fonte Moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ícones (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Bibliotecas para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #f0f9ff;
+            --card-bg: #ffffff;
+            --primary: #0284c7; /* Sky Blue */
+            --primary-hover: #0369a1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --input-bg: #f8fafc;
+            --focus-ring: rgba(2, 132, 199, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at top right, #e0f2fe 0%, transparent 40%), 
+                              radial-gradient(circle at bottom left, #e0f2fe 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        /* --- ANIMAÇÕES --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+
+        /* --- TELA DE LOGIN --- */
+        #loginView {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+
+        .login-icon {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            background: #e0f2fe;
+            width: 80px;
+            height: 80px;
+            line-height: 95px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* --- TOAST DE SUCESSO (Flutuante) --- */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* --- COMPONENTES GERAIS --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-pill {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- FORMULÁRIOS --- */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text-muted);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.95rem;
+            background-color: var(--input-bg);
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        /* --- BOTÕES --- */
+        button {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover); 
+            transform: translateY(-1px);
+        }
+
+        .btn-logout { background-color: white; color: var(--danger); border: 1px solid var(--border); width: auto;}
+        .btn-logout:hover { background-color: #fef2f2; border-color: var(--danger); }
+        
+        .btn-download { background-color: var(--text-main); }
+        .btn-download:hover { background-color: #000; }
+        
+        /* --- MÉTRICAS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            background: #e0f2fe;
+            color: var(--primary);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+        }
+
+        .stat-info div:first-child {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .stat-info div:last-child {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        /* --- TABELA --- */
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 350px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 700px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .badge-manha { background: #fef08a; color: #854d0e; }
+        .badge-tarde { background: #fed7aa; color: #9a3412; }
+        .badge-origem { background: #e2e8f0; color: #334155; }
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .top-bar { flex-direction: column; gap: 15px; }
+            .export-row { display: flex; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOAST DE SUCESSO -->
+<div id="toastSucesso" class="toast">
+    <i class="ph-fill ph-check-circle" style="font-size: 1.5rem;"></i>
+    Atendimento registrado!
+</div>
+
+<!-- TELA DE LOGIN -->
+<div id="loginView" class="container fade-in">
+    <div class="login-card">
+        <div class="login-icon"><i class="ph-fill ph-users-three"></i></div>
+        <h2 style="font-weight: 700; margin-bottom: 5px;">Assistência Social</h2>
+        <p class="login-subtitle">Acesso exclusivo para recepcionistas</p>
+        
+        <div id="loginError" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+
+        <form id="formLogin">
+            <div class="form-group">
+                <label>E-mail de Acesso</label>
+                <input type="email" id="emailLogin" required placeholder="exemplo@email.com">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="senhaLogin" required placeholder="••••••••">
+            </div>
+            <button type="submit"><i class="ph-bold ph-sign-in"></i> Entrar no Sistema</button>
+        </form>
+        <p style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            Não possui conta? Solicite o acesso à administração.
+        </p>
+    </div>
+</div>
+
+<!-- TELA DO PAINEL -->
+<div id="dashboardView" class="container" style="display: none;">
+    
+    <div class="top-bar fade-in">
+        <div class="user-pill">
+            <i class="ph-fill ph-user-circle" style="font-size: 1.2rem;"></i>
+            <span id="userEmailDisplay">carregando...</span>
+        </div>
+        <button id="btnSair" class="btn-logout"><i class="ph-bold ph-sign-out"></i> Sair</button>
+    </div>
+
+    <!-- CARD 1: REGISTRO -->
+    <div class="card fade-in" style="animation-delay: 0.1s;">
+        <h2 class="card-title"><i class="ph-fill ph-clipboard-text"></i> Novo Atendimento</h2>
+        <form id="formAtendimento">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Data do Atendimento</label>
+                    <input type="date" id="dataInput" required>
+                </div>
+                <div class="form-group">
+                    <label>Turno</label>
+                    <select id="turno" required>
+                        <option value="Manhã">Manhã</option>
+                        <option value="Tarde">Tarde</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="nome" required placeholder="Digite o nome da pessoa">
+                </div>
+                <div class="form-group">
+                    <label>CPF (Opcional)</label>
+                    <input type="text" id="cpf" placeholder="000.000.000-00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Origem do Atendimento</label>
+                <select id="origem" required>
+                    <option value="">Selecione a Destinação...</option>
+                    <option value="Público">Atendimento ao Público</option>
+                    <option value="CRAS">CRAS</option>
+                    <option value="CREAS">CREAS</option>
+                    <option value="Criança Feliz">Criança Feliz</option>
+                    <option value="Conselho Tutelar">Conselho Tutelar</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Motivo / Observação</label>
+                <textarea id="motivo" required placeholder="O que a pessoa veio fazer?"></textarea>
+            </div>
+
+            <button type="submit"><i class="ph-bold ph-check"></i> Registrar Atendimento</button>
+        </form>
+    </div>
+
+    <!-- CARD 2: RESUMO -->
+    <div class="card fade-in" style="animation-delay: 0.2s;">
+        <h2 class="card-title"><i class="ph-fill ph-chart-bar"></i> Resumo Mensal</h2>
+        
+        <div class="form-row" style="align-items: end;">
+            <div class="form-group" style="margin: 0;">
+                <label>Visualizar e Exportar Mês</label>
+                <input type="month" id="mesVisualizacao">
+            </div>
+            <div>
+                <button type="button" onclick="window.baixarPDFMensal()" style="background-color: var(--card-bg); color: var(--primary); border: 2px solid var(--primary);">
+                    <i class="ph-bold ph-file-pdf"></i> Gerar PDF do Mês
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-icon"><i class="ph-fill ph-calendar-check"></i></div>
+                <div class="stat-info">
+                    <div id="contagemMes">0</div>
+                    <div>Atendidos no Mês</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon" style="background: #f1f5f9; color: var(--text-muted);"><i class="ph-fill ph-database"></i></div>
+                <div class="stat-info">
+                    <div id="contagemTotal">0</div>
+                    <div>Total no Sistema</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Pessoa Atendida</th>
+                        <th>Origem</th>
+                        <th>Motivo</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaMes">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CARD 3: BACKUP -->
+    <div class="card fade-in" style="animation-delay: 0.3s; background: var(--text-main); color: white;">
+        <h2 class="card-title" style="color: white; border-color: #334155;"><i class="ph-fill ph-download-simple"></i> Backup Geral</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">Exporta toda a base de dados do sistema em formato CSV, compatível com Excel.</p>
+        <button class="btn-download" onclick="window.baixarCSV()"><i class="ph-bold ph-microsoft-excel-logo"></i> Baixar Planilha Completa</button>
+    </div>
+
+</div>
+
+<!-- FIREBASE E SCRIPTS -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCV-NLHOdBQDI88vQGDZ_rxCjx3wluAEqE",
+        authDomain: "meu-site-2e63f.firebaseapp.com",
+        databaseURL: "https://meu-site-2e63f-default-rtdb.firebaseio.com",
+        projectId: "meu-site-2e63f",
+        storageBucket: "meu-site-2e63f.firebasestorage.app",
+        messagingSenderId: "473963797649",
+        appId: "1:473963797649:web:fc2ad30e6507ab55dd7330",
+        measurementId: "G-H43NTQNRWC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let atendimentosGlobais = [];
+    let usuarioAtual = null;
+
+    const loginView = document.getElementById('loginView');
+    const dashboardView = document.getElementById('dashboardView');
+    const loginError = document.getElementById('loginError');
+
+    // Estado da Autenticação
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            usuarioAtual = user;
+            document.getElementById('userEmailDisplay').innerText = user.email;
+            loginView.style.display = 'none';
+            dashboardView.style.display = 'block';
+            iniciarBancoDeDados();
+        } else {
+            usuarioAtual = null;
+            loginView.style.display = 'flex';
+            dashboardView.style.display = 'none';
+        }
+    });
+
+    // Login
+    document.getElementById('formLogin').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('emailLogin').value;
+        const senha = document.getElementById('senhaLogin').value;
+        loginError.style.display = 'none';
+
+        signInWithEmailAndPassword(auth, email, senha).catch(() => {
+            loginError.innerText = "Credenciais incorretas. Tente novamente.";
+            loginError.style.display = 'block';
+        });
+    });
+
+    // Sair
+    document.getElementById('btnSair').addEventListener('click', () => signOut(auth));
+
+    // Configurações de Data Inicial
+    const hoje = new Date();
+    const dataFormatada = hoje.toISOString().split('T')[0];
+    document.getElementById('dataInput').value = dataFormatada;
+    document.getElementById('mesVisualizacao').value = dataFormatada.substring(0, 7);
+
+    // Carregar Banco de Dados
+    function iniciarBancoDeDados() {
+        onValue(ref(db, 'atendimentos'), (snapshot) => {
+            const dados = snapshot.val();
+            atendimentosGlobais = [];
+            if (dados) {
+                for (let id in dados) atendimentosGlobais.push({ id, ...dados[id] });
+            }
+            atualizarTela();
+        });
+    }
+
+    // Mostrar Toast de Sucesso
+    function mostrarToast() {
+        const toast = document.getElementById('toastSucesso');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Cadastrar Atendimento
+    document.getElementById('formAtendimento').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const dataISO = document.getElementById('dataInput').value;
+        const partesData = dataISO.split('-');
+        const dataBR = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+
+        const novoAtendimento = {
+            data: dataBR,
+            turno: document.getElementById('turno').value,
+            nome: document.getElementById('nome').value,
+            cpf: document.getElementById('cpf').value,
+            origem: document.getElementById('origem').value,
+            motivo: document.getElementById('motivo').value,
+            registradoPor: usuarioAtual.email
+        };
+
+        push(ref(db, 'atendimentos'), novoAtendimento).then(() => {
+            document.getElementById('nome').value = '';
+            document.getElementById('cpf').value = '';
+            document.getElementById('motivo').value = '';
+            document.getElementById('origem').value = '';
+            mostrarToast();
+        });
+    });
+
+    // Atualizar Tabela
+    document.getElementById('mesVisualizacao').addEventListener('change', atualizarTela);
+
+    function atualizarTela() {
+        const mesSelecionado = document.getElementById('mesVisualizacao').value;
+        let listaMes = [];
+
+        if (mesSelecionado) {
+            const [anoFiltro, mesFiltro] = mesSelecionado.split('-');
+            listaMes = atendimentosGlobais.filter(item => {
+                const partesData = item.data.split('/');
+                return partesData[1] === mesFiltro && partesData[2] === anoFiltro;
+            });
+        }
+        
+        document.getElementById('contagemMes').innerText = listaMes.length;
+        document.getElementById('contagemTotal').innerText = atendimentosGlobais.length;
+
+        const tbody = document.getElementById('tabelaMes');
+        tbody.innerHTML = '';
+
+        if (listaMes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">Nenhum registro encontrado.</td></tr>';
+        } else {
+            const listaInvertida = [...listaMes].reverse();
+            
+            listaInvertida.forEach(item => {
+                const classeTurno = item.turno === 'Manhã' ? 'badge-manha' : 'badge-tarde';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="white-space: nowrap; font-size: 0.85rem;">
+                        <div style="font-weight: 600;">${item.data}</div>
+                        <div class="badge ${classeTurno}" style="display: inline-block; margin-top: 4px;">${item.turno || '-'}</div>
+                    </td>
+                    <td>
+                        <strong>${item.nome}</strong><br>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">CPF: ${item.cpf || '-'}</span>
+                    </td>
+                    <td><span class="badge badge-origem">${item.origem}</span></td>
+                    <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.motivo}">${item.motivo}</div></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
+
+    // Exportações
+    window.baixarPDFMensal = function() {
+        const mesSelecionado = document.getElementById('mesVisualizacao').value;
+        if (!mesSelecionado) return alert("Selecione um mês.");
+
+        const [anoFiltro, mesFiltro] = mesSelecionado.split('-');
+        const dadosMensais = atendimentosGlobais.filter(item => {
+            const partesData = item.data.split('/');
+            return partesData[1] === mesFiltro && partesData[2] === anoFiltro;
+        });
+
+        if (dadosMensais.length === 0) return alert("Não há atendimentos neste mês.");
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text(`Relatório Mensal De Atendimentos - Assistência Social`, 14, 15);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Referência: ${mesFiltro}/${anoFiltro} | Total De Atendimentos: ${dadosMensais.length}`, 14, 22);
+
+        const linhasTabela = dadosMensais.map(item => [
+            item.data, item.turno || '-', item.nome, item.origem, item.motivo
+        ]);
+
+        doc.autoTable({
+            startY: 28,
+            head: [['Data', 'Turno', 'Nome', 'Origem', 'Motivo']],
+            body: linhasTabela,
+            theme: 'striped',
+            headStyles: { fillColor: [2, 132, 199] },
+            styles: { fontSize: 8 }
+        });
+
+        doc.save(`Relatorio_${mesFiltro}_${anoFiltro}.pdf`);
+    };
+
+    window.baixarCSV = function() {
+        if (atendimentosGlobais.length === 0) return alert('Base de dados vazia.');
+
+        let csvContent = "\uFEFFData;Turno;Nome;CPF;Origem;Motivo;RegistradoPor\n";
+
+        atendimentosGlobais.forEach(item => {
+            const motivoLimpo = item.motivo.replace(/(\r\n|\n|\r)/gm, " ");
+            csvContent += `${item.data};${item.turno || "-"};${item.nome};${item.cpf};${item.origem};${motivoLimpo};${item.registradoPor || "-"}\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Backup_Assist_Social.csv";
+        link.click();
+    };
+</script>
+
+</body>
+</html>
